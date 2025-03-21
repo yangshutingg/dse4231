@@ -218,4 +218,81 @@ learner_classif <- lrn("classif.ranger")  # Random Forest for binary treatment
     xtable(results, digits=3)
     
 # Save results
-save(direct_effect, indirect_effect, file = "dml_mediation_results_females.RData")
+save(direct_effect, indirect_effect, file = "data/dml_females.RData")
+
+
+
+# 2) ESTIMATION FOR MALES:
+
+indicator=female==0
+y=exhealth30[indicator==1]
+d=treat[indicator==1]
+m=work2year2q[indicator==1]
+x=cbind(schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis,pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, hhinc8, fdstamp, welf1, welf2, publicass)[indicator==1,]
+w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis)[indicator==1,]
+
+# Combine confounders
+confounders <- cbind(x, w)
+
+# Define the data for DoubleML
+# Step 1: Direct effect of treatment (d) on outcome (y), controlling for mediator (m) and confounders
+data_direct <- DoubleMLData$new(
+  data = data.table(y = y, d = d, m = m, confounders),
+  y_col = "y",
+  d_cols = "d",
+  x_cols = c("m", colnames(confounders)))  # Include mediator and confounders
+
+# Step 2: Indirect effect of mediator (m) on outcome (y), controlling for treatment (d) and confounders
+data_indirect <- DoubleMLData$new(
+  data = data.table(y = y, d = m, confounders),
+  y_col = "y",
+  d_cols = "d",  # Mediator (m) is the treatment variable
+  x_cols = colnames(confounders),  # Confounders
+  use_other_treat_as_covariate = TRUE  # Allow treatment (d) to be included as a covariate
+)
+
+# Define machine learning models for nuisance parameters
+# Example: Random Forest for both propensity score and outcome regression
+learner <- lrn("regr.ranger")  # Random Forest for continuous outcomes
+learner_classif <- lrn("classif.ranger")  # Random Forest for binary treatment
+
+# Step 1: Estimate direct effect
+dml_direct <- DoubleMLPLR$new(
+  data = data_direct,
+  ml_l = learner,  # Outcome model
+  ml_m = learner_classif,  # Propensity score model
+  n_folds = 5,  # Number of cross-fitting folds
+  score = "partialling out"
+)
+
+# Fit the model
+dml_direct$fit()
+
+# Extract direct effect
+direct_effect <- dml_direct$coef
+
+# Step 2: Estimate indirect effect
+dml_indirect <- DoubleMLPLR$new(
+  data = data_indirect,
+  ml_g = learner,  # Outcome model
+  ml_m = learner_classif,  # Propensity score model
+  n_folds = 5,  # Number of cross-fitting folds
+  score = "partialling out"
+)
+
+# Fit the model
+dml_indirect$fit()
+
+# Extract indirect effect
+indirect_effect <- dml_indirect$coef
+
+# Print results
+cat("Direct Effect (Treatment on Outcome, controlling for Mediator):", direct_effect, "\n")
+cat("Indirect Effect (Mediator on Outcome, controlling for Treatment):", indirect_effect, "\n")
+
+est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
+results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
+xtable(results, digits=3)
+
+# Save results
+save(direct_effect, indirect_effect, file = "data/dml_males.RData")
