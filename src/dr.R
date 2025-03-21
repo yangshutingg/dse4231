@@ -191,4 +191,4 @@ results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  
 xtable(results, digits=3)
 
 # Save results
-save(direct_effect, indirect_effect, file = "data/drs_females.RData")
+save(direct_effect, indirect_effect, file = "data/dr_females.RData")
