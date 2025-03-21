@@ -192,3 +192,52 @@ xtable(results, digits=3)
 
 # Save results
 save(direct_effect, indirect_effect, file = "data/dr_females.RData")
+
+
+# 2) ESTIMATION FOR MALES:
+
+indicator=female==0
+y=exhealth30[indicator==1]
+d=treat[indicator==1]
+m=work2year2q[indicator==1]
+x=cbind(schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis,pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, hhinc8, fdstamp, welf1, welf2, publicass)[indicator==1,]
+w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis)[indicator==1,]
+
+# Combine confounders
+confounders <- cbind(x, w)
+
+# ---- Step 1: Estimate Propensity Scores ----
+# Model for treatment assignment
+propensity_treat <- weightit(d ~ ., data = data.frame(d, confounders), method = "ps", estimand = "ATE")
+
+# Model for mediator assignment
+propensity_mediator <- weightit(m ~ ., data = data.frame(m, confounders), method = "ps", estimand = "ATE")
+
+# Extract weights
+weights_treat <- propensity_treat$weights
+weights_mediator <- propensity_mediator$weights
+
+# ---- Step 2: Outcome Model using Weighted Regression ----
+# Direct Effect: Treatment ??? Outcome (adjusting for mediator & confounders)
+direct_model <- lm(y ~ d + m + confounders, weights = weights_treat)
+direct_effect <- coef(direct_model)["d"]
+direct_se <- sqrt(diag(vcovHC(direct_model, type = "HC3"))["d"])
+direct_pval <- 2 * pnorm(-abs(direct_effect / direct_se))
+
+# Indirect Effect: Mediator ??? Outcome (adjusting for treatment & confounders)
+indirect_model <- lm(y ~ m + d + confounders, weights = weights_mediator)
+indirect_effect <- coef(indirect_model)["m"]
+indirect_se <- sqrt(diag(vcovHC(indirect_model, type = "HC3"))["m"])
+indirect_pval <- 2 * pnorm(-abs(indirect_effect / indirect_se))
+
+# ---- Step 3: Display Results ----
+cat("Doubly Robust Mediation Analysis Results:\n")
+cat("Direct Effect (Treatment on Outcome):", direct_effect, "SE:", direct_se, "P-value:", direct_pval, "\n")
+cat("Indirect Effect (Mediator on Outcome):", indirect_effect, "SE:", indirect_se, "P-value:", indirect_pval, "\n")
+
+est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
+results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
+xtable(results, digits=3)
+
+# Save results
+save(direct_effect, indirect_effect, file = "data/dr_males.RData")
