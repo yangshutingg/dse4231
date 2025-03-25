@@ -218,7 +218,7 @@ learner_classif <- lrn("classif.ranger")  # Random Forest for binary treatment
     xtable(results, digits=3)
     
 # Save results
-save(direct_effect, indirect_effect, file = "data/dml_females.RData")
+save.image("data/dml_females.RData")
 
 
 
@@ -295,4 +295,4 @@ results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  
 xtable(results, digits=3)
 
 # Save results
-save(direct_effect, indirect_effect, file = "data/dml_males.RData")
+save.image("data/dml_males.RData")
