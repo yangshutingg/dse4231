@@ -2,10 +2,9 @@ library(foreign)
 library(xtable)
 library(np)
 library(DoubleML)
+library(grf)
 library(mlr3)
 library(mlr3learners)
-library(data.table)
-library(ranger)
 
 
 #########################
@@ -55,63 +54,74 @@ library(ranger)
 # sd.ie.partial.control.trim: Standard error of trimmed partial indirect effect under control (Assumptions 3 and 4)
 
 
-mediation<-function(y,d,m,x,w,trim=0.05, boot){
-  temp<-effects.mediation(y=y,d=d,m=m,x=x,w=w,trim=trim)
+mediation<-function(y,d,m,x,w,trim=0.05, boot, n_folds = 2){
+  temp<-effects.mediation(y=y,d=d,m=m,x=x,w=w,trim=trim,n_folds=n_folds)
   temp2<-bootstrap.mediation(y=y,d=d,m=m,x=x,w=w,boot=boot,trim=trim)
   list(te=temp$te, de.treat=temp$de.treat, de.treat.trim=temp$de.treat.trim, de.control=temp$de.control, de.control.trim=temp$de.control.trim, ie.treat=temp$ie.treat, ie.treat.trim=temp$ie.treat.trim, ie.control=temp$ie.control, ie.control.trim=temp$ie.control.trim,     ie.treat.pretreat=temp$ie.treat.pretreat, ie.treat.pretreat.trim=temp$ie.treat.pretreat.trim, ie.control.pretreat=temp$ie.control.pretreat, ie.control.pretreat.trim=temp$ie.control.pretreat.trim,    ie.total.treat=temp$ie.total.treat, ie.partial.treat=temp$ie.partial.treat, ie.total.control=temp$ie.total.control, ie.partial.control=temp$ie.partial.control, sd.te=temp2$sd.te, sd.de.treat=temp2$sd.de.treat, sd.de.treat.trim=temp2$sd.de.treat.trim, sd.de.control=temp2$sd.de.control, sd.de.control.trim=temp2$sd.de.control.trim, sd.ie.treat=temp2$sd.ie.treat, sd.ie.treat.trim=temp2$sd.ie.treat.trim, sd.ie.control=temp2$sd.ie.control, sd.ie.control.trim=temp2$sd.ie.control.trim,            sd.ie.treat.pretreat=temp2$sd.ie.treat.pretreat, sd.ie.treat.pretreat.trim=temp2$sd.ie.treat.pretreat.trim, sd.ie.control.pretreat=temp2$sd.ie.control.pretreat, sd.ie.control.pretreat.trim=temp2$sd.ie.control.pretreat.trim,          sd.ie.total.treat=temp2$sd.ie.total.treat, sd.ie.partial.treat=temp2$sd.ie.partial.treat, sd.ie.total.control=temp2$sd.ie.total.control, sd.ie.partial.control=temp2$sd.ie.partial.control)
 }
 
-effects.mediation<-function(y,d,m,x,w,trim=0.05){
+effects.mediation <- function(y, d, m, x, w, trim = 0.05, n_folds = 2) {
+  # Create the data frame
+  data <- data.frame(y = y, d = d, m = m, x = x, w = w)
   
-  temp=glm(d~cbind(m,w,x),family=binomial(probit))$coef
-  pscore1=glm(d~cbind(m,w,x),family=binomial(probit))$fitted
-  #pscore2=rep(mean(d),length(pscore1))
-  pscore2=glm(d~x,family=binomial(probit))$fitted
-  pscore3=glm(d~cbind(w,x),family=binomial(probit))$fitted
-  pscore4=glm(d~cbind(m,x),family=binomial(probit))$fitted
+  # Define covariates (including the mediator `m`)
+  covariates <- c("m", "x.schobef", "x.trainyrbef", "x.jobeverbef", "x.jobyrbef", 
+                  "x.health012", "x.health0mis", "x.pe_prb0", "x.pe_prb0mis", 
+                  "x.everalc", "x.alc12", "x.everilldrugs", "x.age_cat", "x.edumis", 
+                  "x.eduhigh", "x.rwhite", "x.everarr", "x.hhsize", "x.hhsizemis", 
+                  "x.hhinc12", "x.hhinc8", "x.fdstamp", "x.welf1", "x.welf2", 
+                  "x.publicass", "w.emplq4", "w.emplq4full", "w.pemplq4", 
+                  "w.pemplq4mis", "w.vocq4", "w.vocq4mis", "w.health1212", 
+                  "w.health123", "w.pe_prb12", "w.pe_prb12mis", "w.narry1", 
+                  "w.numkidhhf1zero", "w.numkidhhf1onetwo", "w.pubhse12", 
+                  "w.h_ins12a", "w.h_ins12amis")
   
-  temp<-lm(y[d==1]~cbind(m,w,x)[d==1,])$coef
-  pred0=cbind(1,mean(m*(1-d)/(1-pscore2)),w,x)%*%temp
+  # Prepare the DoubleMLData object (excluding `m_col`)
+  dml_data <- DoubleMLData$new(data, y_col = "y", d_col = "d", x_cols = covariates)
   
+  # Define machine learning models for DoubleML
+  ml_l <- lrn("regr.ranger")  # Outcome model
+  ml_m <- lrn("regr.ranger")  # Treatment model
   
-  ind=((pscore1<trim) | (pscore1>(1-trim)) )
-  y1m1<-sum(y*d/pscore2)/sum(d/pscore2)
-  y1m1trim<-sum(y[ind==0]*d[ind==0]/pscore2[ind==0])/sum(d[ind==0]/pscore2[ind==0])
-  y0m0<-sum(y*(1-d)/(1-pscore2))/sum((1-d)/(1-pscore2))
-  y0m0trim<-sum(y[ind==0]*(1-d[ind==0])/(1-pscore2[ind==0]))/sum((1-d[ind==0])/(1-pscore2[ind==0]))
-  y1m0<-(sum(y*d*(1-pscore1)/((1-pscore2)*pscore1))/sum(d*(1-pscore1)/((1-pscore2)*pscore1)))
-  y1m0trim<-(sum(y[ind==0]*d[ind==0]*(1-pscore1[ind==0])/((1-pscore2[ind==0])*pscore1[ind==0]))/sum(d[ind==0]*(1-pscore1[ind==0])/((1-pscore2[ind==0])*pscore1[ind==0])))
-  y0m1<-(sum(y*(1-d)* pscore1/(pscore2*(1-pscore1)))/sum((1-d)* pscore1/(pscore2*(1-pscore1))))
-  y0m1trim<-(sum(y[ind==0]*(1-d[ind==0])* pscore1[ind==0]/(pscore2[ind==0]*(1-pscore1[ind==0])))/sum((1-d[ind==0])* pscore1[ind==0]/(pscore2[ind==0]*(1-pscore1[ind==0]))))
+  # Create DoubleML object
+  dml_model <- DoubleMLPLR$new(dml_data, ml_l = ml_l, ml_m = ml_m, n_folds = n_folds)
   
+  # Fit the model
+  dml_model$fit()
   
-  de.treat=y1m1-y0m1
-  de.treat.trim=y1m1trim-y0m1trim
-  ie.control=y0m1-y0m0
-  ie.control.trim=y0m1trim-y0m0trim
-  ie.control.pretreat=(sum(y*(1-d)*pscore4/(pscore2*(1-pscore4)))/sum((1-d)*pscore4/(pscore2*(1-pscore4)))) - y0m0
-  ie.control.pretreat.trim=(sum(y[ind==0]*(1-d[ind==0])*pscore4[ind==0]/(pscore2[ind==0]*(1-pscore4[ind==0])))/sum((1-d[ind==0])*pscore4[ind==0]/(pscore2[ind==0]*(1-pscore4[ind==0])))) - y0m0trim
-  de.control=y1m0-y0m0
-  de.control.trim=y1m0trim-y0m0trim
-  ie.treat=y1m1-y1m0
-  ie.treat.trim=y1m1trim-y1m0trim
-  ie.treat.pretreat=y1m1 -  (sum(y*d *(1-pscore4)/pscore4)/sum(d *(1-pscore4)/pscore4)) 
-  ie.treat.pretreat.trim=y1m1trim -  (sum(y[ind==0]*d[ind==0] *(1-pscore4[ind==0])/pscore4[ind==0])/sum(d[ind==0] *(1-pscore4[ind==0])/pscore4[ind==0]))
+  # Extract causal effects
+  total_effect <- dml_model$coef["d"]  # Total effect estimate
   
-  ie.partial.treat=y1m1 - (sum( y*d/pscore1 * (1-pscore1)/(1-pscore3)* (pscore3)/pscore2 )/sum(d/pscore1 * (1-pscore1)/(1-pscore3)* (pscore3)/pscore2 ))
-  ie.partial.treat.trim=y1m1trim - (sum( y[ind==0]*d[ind==0]/pscore1[ind==0] * (1-pscore1[ind==0])/(1-pscore3[ind==0])* (pscore3[ind==0])/pscore2[ind==0] )/sum(d[ind==0]/pscore1[ind==0] * (1-pscore1[ind==0])/(1-pscore3[ind==0])* (pscore3[ind==0])/pscore2[ind==0] ))
-  ie.total.treat= sum((y-pred0)*d/pscore2)/sum(d/pscore2) 
+  # Indirect and direct effects
+  direct_effect <- total_effect - dml_model$coef["m"]
+  indirect_effect <- dml_model$coef["m"]
   
-  temp<-lm(y[d==0]~cbind(m,w,x)[d==0,])$coef
-  pred0=cbind(1,mean(m*d/pscore2),w,x)%*%temp
+  # Compute trimmed effects (removing extreme propensity scores)
+  ps <- dml_model$psi  # Extract propensity scores
+  trim_mask <- (ps >= trim) & (ps <= (1 - trim))  # Trim extreme values
+  trimmed_data <- data[trim_mask, ]  # Apply trimming
   
-  ie.partial.control=sum( y*(1-d)/(1-pscore1) * (pscore1)/(pscore3)* (1-pscore3)/(1-pscore2) )/sum((1-d)/(1-pscore1) * (pscore1)/(pscore3)* (1-pscore3)/(1-pscore2) ) - y0m0
-  ie.partial.control.trim=sum( y[ind==0]*(1-d[ind==0])/(1-pscore1[ind==0]) * (pscore1[ind==0])/(pscore3[ind==0])* (1-pscore3[ind==0])   /(1-pscore2[ind==0])  )/sum((1-d[ind==0])/(1-pscore1[ind==0]) * (pscore1[ind==0])/(pscore3[ind==0])* (1-pscore3[ind==0]) /(1-pscore2[ind==0]) ) - y0m0trim
-  ie.total.control=sum( (pred0-y)*(1-d)/(1-pscore2)  )/sum((1-d)/(1-pscore2)  )
+  # Fit the model again with trimmed data
+  dml_trimmed <- DoubleMLData$new(trimmed_data, y_col = "y", d_col = "d", x_cols = covariates)
+  dml_trimmed_model <- DoubleMLPLR$new(dml_trimmed, ml_l = ml_l, ml_m = ml_m, n_folds = n_folds)
+  dml_trimmed_model$fit()
   
-  te=mean(y[d==1])-mean(y[d==0])
-  list(te=te, de.treat=de.treat, de.treat.trim=de.treat.trim, de.control=de.control, de.control.trim=de.control.trim, ie.treat=ie.treat, ie.treat.trim=ie.treat.trim, ie.control=ie.control, ie.control.trim=ie.control.trim, ie.treat.pretreat=ie.treat.pretreat, ie.treat.pretreat.trim=ie.treat.pretreat.trim, ie.control.pretreat=ie.control.pretreat, ie.control.pretreat.trim=ie.control.pretreat.trim, ie.total.treat=ie.total.treat, ie.partial.treat=ie.partial.treat, ie.partial.treat.trim=ie.partial.treat.trim, ie.total.control=ie.total.control, ie.partial.control=ie.partial.control, ie.partial.control.trim=ie.partial.control.trim)
+  # Extract trimmed causal estimates
+  total_effect_trimmed <- dml_trimmed_model$coef["d"]
+  direct_effect_trimmed <- total_effect_trimmed - dml_trimmed_model$coef["m"]
+  indirect_effect_trimmed <- dml_trimmed_model$coef["m"]
+  
+  # Return the results in a structured list
+  list(
+    te = total_effect,                        
+    de = direct_effect,         
+    de.trim = direct_effect_trimmed,    
+    ie = indirect_effect,       
+    ie.trim = indirect_effect_trimmed,
+    te.trim = total_effect_trimmed
+  )
 }
+
 
 
 
@@ -157,65 +167,9 @@ w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, h
 # Combine confounders
 confounders <- cbind(x, w)
 
-# Define the data for DoubleML
-# Step 1: Direct effect of treatment (d) on outcome (y), controlling for mediator (m) and confounders
-data_direct <- DoubleMLData$new(
-  data = data.table(y = y, d = d, m = m, confounders),
-  y_col = "y",
-  d_cols = "d",
-  x_cols = c("m", colnames(confounders)))  # Include mediator and confounders
-  
-# Step 2: Indirect effect of mediator (m) on outcome (y), controlling for treatment (d) and confounders
-data_indirect <- DoubleMLData$new(
-  data = data.table(y = y, d = m, confounders),
-  y_col = "y",
-  d_cols = "d",  # Mediator (m) is the treatment variable
-  x_cols = colnames(confounders),  # Confounders
-  use_other_treat_as_covariate = TRUE  # Allow treatment (d) to be included as a covariate
-)
-    
-# Define machine learning models for nuisance parameters
-# Example: Random Forest for both propensity score and outcome regression
-learner <- lrn("regr.ranger")  # Random Forest for continuous outcomes
-learner_classif <- lrn("classif.ranger")  # Random Forest for binary treatment
-    
-    # Step 1: Estimate direct effect
-    dml_direct <- DoubleMLPLR$new(
-      data = data_direct,
-      ml_l = learner,  # Outcome model
-      ml_m = learner_classif,  # Propensity score model
-      n_folds = 5,  # Number of cross-fitting folds
-      score = "partialling out"
-    )
-    
-    # Fit the model
-    dml_direct$fit()
-    
-    # Extract direct effect
-    direct_effect <- dml_direct$coef
-    
-    # Step 2: Estimate indirect effect
-    dml_indirect <- DoubleMLPLR$new(
-      data = data_indirect,
-      ml_g = learner,  # Outcome model
-      ml_m = learner_classif,  # Propensity score model
-      n_folds = 5,  # Number of cross-fitting folds
-      score = "partialling out"
-    )
-    
-    # Fit the model
-    dml_indirect$fit()
-    
-    # Extract indirect effect
-    indirect_effect <- dml_indirect$coef
-    
-    # Print results
-    cat("Direct Effect (Treatment on Outcome, controlling for Mediator):", direct_effect, "\n")
-    cat("Indirect Effect (Mediator on Outcome, controlling for Treatment):", indirect_effect, "\n")
-
-    est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
-    results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
-    xtable(results, digits=3)
+est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
+results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
+xtable(results, digits=3)
     
 # Save results
 save.image("data/dml_females.RData")
@@ -233,62 +187,6 @@ w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, h
 
 # Combine confounders
 confounders <- cbind(x, w)
-
-# Define the data for DoubleML
-# Step 1: Direct effect of treatment (d) on outcome (y), controlling for mediator (m) and confounders
-data_direct <- DoubleMLData$new(
-  data = data.table(y = y, d = d, m = m, confounders),
-  y_col = "y",
-  d_cols = "d",
-  x_cols = c("m", colnames(confounders)))  # Include mediator and confounders
-
-# Step 2: Indirect effect of mediator (m) on outcome (y), controlling for treatment (d) and confounders
-data_indirect <- DoubleMLData$new(
-  data = data.table(y = y, d = m, confounders),
-  y_col = "y",
-  d_cols = "d",  # Mediator (m) is the treatment variable
-  x_cols = colnames(confounders),  # Confounders
-  use_other_treat_as_covariate = TRUE  # Allow treatment (d) to be included as a covariate
-)
-
-# Define machine learning models for nuisance parameters
-# Example: Random Forest for both propensity score and outcome regression
-learner <- lrn("regr.ranger")  # Random Forest for continuous outcomes
-learner_classif <- lrn("classif.ranger")  # Random Forest for binary treatment
-
-# Step 1: Estimate direct effect
-dml_direct <- DoubleMLPLR$new(
-  data = data_direct,
-  ml_l = learner,  # Outcome model
-  ml_m = learner_classif,  # Propensity score model
-  n_folds = 5,  # Number of cross-fitting folds
-  score = "partialling out"
-)
-
-# Fit the model
-dml_direct$fit()
-
-# Extract direct effect
-direct_effect <- dml_direct$coef
-
-# Step 2: Estimate indirect effect
-dml_indirect <- DoubleMLPLR$new(
-  data = data_indirect,
-  ml_g = learner,  # Outcome model
-  ml_m = learner_classif,  # Propensity score model
-  n_folds = 5,  # Number of cross-fitting folds
-  score = "partialling out"
-)
-
-# Fit the model
-dml_indirect$fit()
-
-# Extract indirect effect
-indirect_effect <- dml_indirect$coef
-
-# Print results
-cat("Direct Effect (Treatment on Outcome, controlling for Mediator):", direct_effect, "\n")
-cat("Indirect Effect (Mediator on Outcome, controlling for Treatment):", indirect_effect, "\n")
 
 est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
 results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
