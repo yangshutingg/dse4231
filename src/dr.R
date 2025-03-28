@@ -191,7 +191,7 @@ results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  
 xtable(results, digits=3)
 
 # Save results
-save(direct_effect, indirect_effect, file = "data/dr_females.RData")
+save.image("data/dr_females.RData")
 
 
 # 2) ESTIMATION FOR MALES:
@@ -240,4 +240,4 @@ results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  
 xtable(results, digits=3)
 
 # Save results
-save(direct_effect, indirect_effect, file = "data/dr_males.RData")
+save.image("data/dr_males.RData")
