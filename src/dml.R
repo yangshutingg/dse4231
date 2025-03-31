@@ -61,65 +61,57 @@ mediation<-function(y,d,m,x,w,trim=0.05, boot, n_folds = 2){
 }
 
 effects.mediation <- function(y, d, m, x, w, trim = 0.05, n_folds = 2) {
-  # Create the data frame
-  data <- data.frame(y = y, d = d, m = m, x = x, w = w)
+  # Combine pre-treatment and post-treatment confounders
+  data <- data.frame(y = y, d = d, m = m, x, w)
   
-  # Define covariates (including the mediator `m`)
-  covariates <- c("m", "x.schobef", "x.trainyrbef", "x.jobeverbef", "x.jobyrbef", 
-                  "x.health012", "x.health0mis", "x.pe_prb0", "x.pe_prb0mis", 
-                  "x.everalc", "x.alc12", "x.everilldrugs", "x.age_cat", "x.edumis", 
-                  "x.eduhigh", "x.rwhite", "x.everarr", "x.hhsize", "x.hhsizemis", 
-                  "x.hhinc12", "x.hhinc8", "x.fdstamp", "x.welf1", "x.welf2", 
-                  "x.publicass", "w.emplq4", "w.emplq4full", "w.pemplq4", 
-                  "w.pemplq4mis", "w.vocq4", "w.vocq4mis", "w.health1212", 
-                  "w.health123", "w.pe_prb12", "w.pe_prb12mis", "w.narry1", 
-                  "w.numkidhhf1zero", "w.numkidhhf1onetwo", "w.pubhse12", 
-                  "w.h_ins12a", "w.h_ins12amis")
+  # Define machine learning learners
+  ml_y <- lrn("regr.ranger")  # Outcome model
+  ml_d <- lrn("regr.ranger")  # Treatment model
+  ml_m <- lrn("regr.ranger")  # Mediator model
   
-  # Prepare the DoubleMLData object (excluding `m_col`)
-  dml_data <- DoubleMLData$new(data, y_col = "y", d_col = "d", x_cols = covariates)
+  # Step 1: Estimate total effect (TE) using DoubleML
+  dml_data_y <- DoubleMLData$new(data, y_col = "y", d_col = "d", x_cols = c("m", colnames(x), colnames(w)))
+  dml_model_y <- DoubleMLPLR$new(dml_data_y, ml_l = ml_y, ml_m = ml_d, n_folds = n_folds)
+  dml_model_y$fit()
+  total_effect <- dml_model_y$coef["d"]
   
-  # Define machine learning models for DoubleML
-  ml_l <- lrn("regr.ranger")  # Outcome model
-  ml_m <- lrn("regr.ranger")  # Treatment model
+  # Step 2: Estimate mediator model
+  dml_data_m <- DoubleMLData$new(data, y_col = "m", d_col = "d", x_cols = c(colnames(x), colnames(w)))
+  dml_model_m <- DoubleMLPLR$new(dml_data_m, ml_l = ml_m, ml_m = ml_d, n_folds = n_folds)
+  dml_model_m$fit()
+  mediator_effect <- dml_model_m$coef["d"]
   
-  # Create DoubleML object
-  dml_model <- DoubleMLPLR$new(dml_data, ml_l = ml_l, ml_m = ml_m, n_folds = n_folds)
+  # Compute direct and indirect effects
+  direct_effect <- total_effect - mediator_effect
+  indirect_effect <- mediator_effect
   
-  # Fit the model
-  dml_model$fit()
+  # Step 3: Apply trimming
+  ps <- dml_model_y$psi  # Extract propensity scores
+  trim_mask <- (ps >= trim) & (ps <= (1 - trim))
+  trimmed_data <- data[trim_mask, ]
   
-  # Extract causal effects
-  total_effect <- dml_model$coef["d"]  # Total effect estimate
+  # Re-estimate effects after trimming
+  dml_trimmed_y <- DoubleMLData$new(trimmed_data, y_col = "y", d_col = "d", x_cols = c("m", colnames(x), colnames(w)))
+  dml_trimmed_model_y <- DoubleMLPLR$new(dml_trimmed_y, ml_l = ml_y, ml_m = ml_d, n_folds = n_folds)
+  dml_trimmed_model_y$fit()
+  total_effect_trimmed <- dml_trimmed_model_y$coef["d"]
   
-  # Indirect and direct effects
-  direct_effect <- total_effect - dml_model$coef["m"]
-  indirect_effect <- dml_model$coef["m"]
+  dml_trimmed_m <- DoubleMLData$new(trimmed_data, y_col = "m", d_col = "d", x_cols = c(colnames(x), colnames(w)))
+  dml_trimmed_model_m <- DoubleMLPLR$new(dml_trimmed_m, ml_l = ml_m, ml_m = ml_d, n_folds = n_folds)
+  dml_trimmed_model_m$fit()
+  mediator_effect_trimmed <- dml_trimmed_model_m$coef["d"]
   
-  # Compute trimmed effects (removing extreme propensity scores)
-  ps <- dml_model$psi  # Extract propensity scores
-  trim_mask <- (ps >= trim) & (ps <= (1 - trim))  # Trim extreme values
-  trimmed_data <- data[trim_mask, ]  # Apply trimming
+  direct_effect_trimmed <- total_effect_trimmed - mediator_effect_trimmed
+  indirect_effect_trimmed <- mediator_effect_trimmed
   
-  # Fit the model again with trimmed data
-  dml_trimmed <- DoubleMLData$new(trimmed_data, y_col = "y", d_col = "d", x_cols = covariates)
-  dml_trimmed_model <- DoubleMLPLR$new(dml_trimmed, ml_l = ml_l, ml_m = ml_m, n_folds = n_folds)
-  dml_trimmed_model$fit()
-  
-  # Extract trimmed causal estimates
-  total_effect_trimmed <- dml_trimmed_model$coef["d"]
-  direct_effect_trimmed <- total_effect_trimmed - dml_trimmed_model$coef["m"]
-  indirect_effect_trimmed <- dml_trimmed_model$coef["m"]
-  
-  # Return the results in a structured list
-  list(
-    te = total_effect,                        
-    de = direct_effect,         
-    de.trim = direct_effect_trimmed,    
-    ie = indirect_effect,       
+  return(list(
+    te = total_effect,
+    de = direct_effect,
+    de.trim = direct_effect_trimmed,
+    ie = indirect_effect,
     ie.trim = indirect_effect_trimmed,
     te.trim = total_effect_trimmed
-  )
+  ))
 }
 
 
@@ -166,6 +158,9 @@ w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, h
 
 # Combine confounders
 confounders <- cbind(x, w)
+
+test <- effects.mediation(y, d, m, x, w)
+print(test)
 
 est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
 results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
