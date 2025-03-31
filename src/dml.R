@@ -125,7 +125,7 @@ effects.mediation <- function(y, d, m, x, w, trim = 0.05, n_folds = 2) {
 
 
 
-bootstrap.mediation<-function(y,d,m,x,w,boot=1999,trim=0.05){
+bootstrap.mediation<-function(y,d,m,x,w,boot=1999,trim=0.05,n_folds=2){
   obs<-length(y)
   mc=c()
   temp=c()
@@ -139,7 +139,7 @@ bootstrap.mediation<-function(y,d,m,x,w,boot=1999,trim=0.05){
     if (length(w)==length(y)) wb<-w[sboot]
     if (length(w)!=length(y)) wb<-w[sboot,]
     
-    est<-c(effects.mediation(yb,db,mb,xb,wb,trim=trim))
+    est<-c(effects.mediation(y=y,d=d,m=m,x=x,w=w,trim=trim,n_folds=n_folds))
     if (sum(is.na(est))==0) mc<-rbind(mc, est)
     temp<-c(temp,1)
   }
