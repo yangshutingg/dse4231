@@ -1,19 +1,29 @@
 library(grf)
 library(dplyr)
+library(haven)
 
+data = read_dta("data/causalmech.dta")
+attach(data)
 data_female <- subset(data, female == 1)
 
-y <- data_female$exhealth30
-d <- data_female$treat
-m <- data_female$work2year2q
+indicator=female==1 
+y=exhealth30[indicator==1]
+d=treat[indicator==1]
+m=work2year2q[indicator==1]
+x=cbind(schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis,pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, hhinc8, fdstamp, welf1, welf2, publicass)[indicator==1,]
+w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis)[indicator==1,]
 
-x <- data_female %>%
-  select(schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis, 
-         pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, 
-         edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, 
-         hhinc8, fdstamp, welf1, welf2, publicass)
+#y <- data_female$exhealth30
+#d <- data_female$treat
+#m <- data_female$work2year2q
+#x <- data_female %>%
+#  select(schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis, 
+#         pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, 
+#         edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, 
+#         hhinc8, fdstamp, welf1, welf2, publicass)
 
 cf_total <- causal_forest(X = as.matrix(x), Y = y, W = d, set.seed(123))  # Total effect
+cf_direct <- causal_forest(X = as.matrix(x), Y = y, W = d, W.hat = predict(causal_forest(X = as.matrix(x), Y = m, W = d))$predictions, set.seed(123))  # Direct effect
 cf_mediation <- causal_forest(X = as.matrix(x), Y = y, W = m, set.seed(123))  # Indirect effect
 
 total_effect <- predict(cf_total)$predictions
