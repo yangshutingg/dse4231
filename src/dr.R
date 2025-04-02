@@ -71,7 +71,15 @@ effects.mediation<-function(y,d,m,x,w,trim=0.05){
   pscore4=glm(d~cbind(m,x),family=binomial(probit))$fitted
   
   temp<-lm(y[d==1]~cbind(m,w,x)[d==1,])$coef
-  pred0=cbind(1,mean(m*(1-d)/(1-pscore2)),w,x)%*%temp
+  
+  m0 <- mean(m * (1 - d) / (1 - pscore2))  # IPW estimate of M(0)
+  design_m0 <- cbind(1, m0, w, x)           # Design matrix with M(0)
+  
+  # Step 3: Doubly robust prediction (IPW + regression)
+  y1_pred <- predict(temp, newdata = data.frame(design_m0))
+  pred0 = mean(d * y / pscore2 + (1 - d / pscore2) * y1_pred)
+  
+  #pred0=cbind(1,mean(m*(1-d)/(1-pscore2)),w,x)%*%temp
   
   
   ind=((pscore1<trim) | (pscore1>(1-trim)) )
@@ -112,8 +120,6 @@ effects.mediation<-function(y,d,m,x,w,trim=0.05){
   te=mean(y[d==1])-mean(y[d==0])
   list(te=te, de.treat=de.treat, de.treat.trim=de.treat.trim, de.control=de.control, de.control.trim=de.control.trim, ie.treat=ie.treat, ie.treat.trim=ie.treat.trim, ie.control=ie.control, ie.control.trim=ie.control.trim, ie.treat.pretreat=ie.treat.pretreat, ie.treat.pretreat.trim=ie.treat.pretreat.trim, ie.control.pretreat=ie.control.pretreat, ie.control.pretreat.trim=ie.control.pretreat.trim, ie.total.treat=ie.total.treat, ie.partial.treat=ie.partial.treat, ie.partial.treat.trim=ie.partial.treat.trim, ie.total.control=ie.total.control, ie.partial.control=ie.partial.control, ie.partial.control.trim=ie.partial.control.trim)
 }
-
-
 
 bootstrap.mediation<-function(y,d,m,x,w,boot=1999,trim=0.05){
   obs<-length(y)
@@ -186,7 +192,7 @@ cat("Doubly Robust Mediation Analysis Results:\n")
 cat("Direct Effect (Treatment on Outcome):", direct_effect, "SE:", direct_se, "P-value:", direct_pval, "\n")
 cat("Indirect Effect (Mediator on Outcome):", indirect_effect, "SE:", indirect_se, "P-value:", indirect_pval, "\n")
 
-est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
+est<-mediation(y,d,m,x,w,trim=0.05, boot=19)   
 results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
 xtable(results, digits=3)
 
