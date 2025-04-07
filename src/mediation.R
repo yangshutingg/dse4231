@@ -36,6 +36,14 @@ mediation_result <- mediate(
 
 # Summarize results
 summary(mediation_result)
+# From summary output
+summary_stats <- summary(mediation_result)
+
+# MSE = SE^2 (assuming unbiased estimator)
+mse_total <- (summary_stats$tau.ci[2] - summary_stats$tau.ci[1])/(2*1.96)^2
+mse_ade <- (summary_stats$z0.ci[2] - summary_stats$z0.ci[1])/(2*1.96)^2
+mse_acme <- (summary_stats$d1.ci[2] - summary_stats$d1.ci[1])/(2*1.96)^2
+
 
 
 # 2) ESTIMATION FOR MALES:
@@ -69,6 +77,13 @@ mediation_result <- mediate(
 
 # Summarize results
 summary(mediation_result)
+# From summary output
+summary_stats <- summary(mediation_result)
+
+# MSE = SE^2 (assuming unbiased estimator)
+mse_total <- (summary_stats$tau.ci[2] - summary_stats$tau.ci[1])/(2*1.96)^2
+mse_ade <- (summary_stats$z0.ci[2] - summary_stats$z0.ci[1])/(2*1.96)^2
+mse_acme <- (summary_stats$d1.ci[2] - summary_stats$d1.ci[1])/(2*1.96)^2
 
 # 1) Estimation for females
 indicator <- female == 1
