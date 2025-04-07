@@ -50,6 +50,32 @@ mediation_result$results
 mediation_result_trimmed$results
 mediation_result_pretreat$results
 mediation_result_pretreat_trimmed$results
+mse_total <- (0.01625071)^2
+mse_dir_treat <- (0.01623779)^2 
+mse_dir_control <- (0.01627597)^2
+mse_indir_treat <- (0.0007100627)^2
+mse_indir_control <- (0.002508323)^2
+
+# Estimates
+theta_total <- 0.02609086
+theta_dir_treat <- 0.02790119
+theta_dir_control <- 0.02459912
+theta_indir_treat <- 0.0014917421
+theta_indir_control <- -0.001810328
+
+# Standard errors
+se_total <- 0.01625071
+se_dir_treat <- 0.01623779
+se_dir_control <- 0.01627597
+se_indir_treat <- 0.0007100627
+se_indir_control <- 0.002508323
+
+# 95% CIs
+ci_total <- c(theta_total - 1.96 * se_total, theta_total + 1.96 * se_total)
+ci_dir_treat <- c(theta_dir_treat - 1.96 * se_dir_treat, theta_dir_treat + 1.96 * se_dir_treat)
+ci_dir_control <- c(theta_dir_control - 1.96 * se_dir_control, theta_dir_control + 1.96 * se_dir_control)
+ci_indir_treat <- c(theta_indir_treat - 1.96 * se_indir_treat, theta_indir_treat + 1.96 * se_indir_treat)
+ci_indir_control <- c(theta_indir_control - 1.96 * se_indir_control, theta_indir_control + 1.96 * se_indir_control)
 
 # 2) ESTIMATION FOR MALES:
 

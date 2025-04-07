@@ -28,10 +28,37 @@ w=cbind(emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, h
 cf_total <- causal_forest(X = as.matrix(x), Y = y, W = d, set.seed(123))  # Total effect
 cf_direct <- causal_forest(X = as.matrix(x), Y = y, W = d, W.hat = predict(causal_forest(X = as.matrix(x), Y = m, W = d))$predictions, set.seed(123))  # Direct effect
 cf_mediation <- causal_forest(X = as.matrix(x), Y = y, W = m, set.seed(123))  # Indirect effect
-
 total_effect <- predict(cf_total)$predictions
 direct_effect_treat <- predict(cf_direct)$predictions
 indirect_effect_treat <- predict(cf_mediation)$predictions
+se_total_cf = sqrt(predict(cf_total, estimate.variance = TRUE)$variance.estimates)
+se_mediation_cf = sqrt(predict(cf_mediation, estimate.variance = TRUE)$variance.estimates)
+se_direct_cf = sqrt(predict(cf_direct, estimate.variance = TRUE)$variance.estimates)
+avg_total <- mean(total_effect)
+avg_direct <- mean(direct_effect_treat)
+avg_indirect <- mean(indirect_effect_treat)
+n <- length(y)
+avg_total_se <- sqrt(mean(se_total_cf^2)) / sqrt(n)
+avg_direct_se <- sqrt(mean(se_direct_cf^2)) / sqrt(n)
+avg_indirect_se <- sqrt(mean(se_mediation_cf^2)) / sqrt(n)
+
+# 95% CIs
+avg_total_ci <- c(avg_total - 1.96 * avg_total_se, avg_total + 1.96 * avg_total_se)
+avg_direct_ci <- c(avg_direct - 1.96 * avg_direct_se, avg_direct + 1.96 * avg_direct_se)
+avg_indirect_ci <- c(avg_indirect - 1.96 * avg_indirect_se, avg_indirect + 1.96 * avg_indirect_se)
+
+cat("Avg Total Effect CI: [", avg_total_ci[1], ",", avg_total_ci[2], "]\n")
+cat("Avg Direct Effect CI: [", avg_direct_ci[1], ",", avg_direct_ci[2], "]\n")
+cat("Avg Indirect Effect CI: [", avg_indirect_ci[1], ",", avg_indirect_ci[2], "]\n")
+
+mse_total = mean((y - total_effect)^2)
+mse_direct = mean((y - direct_effect_treat)^2)
+mse_mediation = mean((y - indirect_effect_treat)^2)
+
+cat("MSE (Total Effect):", mse_total, "\n")
+cat("MSE (Direct Effect):", mse_direct, "\n")
+cat("MSE (Indirect/Mediation Effect):", mse_mediation, "\n")
+
 #indirect_effect_treat <- predict(cf_mediation)$predictions * predict(causal_forest(X = as.matrix(x), Y = m, W = d))$predictions
 direct_effect_control <- direct_effect_treat - total_effect
 indirect_effect_control <- total_effect - direct_effect_control
@@ -121,6 +148,33 @@ indirect_effect_treat <- predict(cf_mediation)$predictions
 direct_effect_control <- direct_effect_treat - total_effect
 indirect_effect_control <- total_effect - direct_effect_control
 baseline_y <- mean(y[d == 0 & m == 0])
+se_total_cf = sqrt(predict(cf_total, estimate.variance = TRUE)$variance.estimates)
+se_mediation_cf = sqrt(predict(cf_mediation, estimate.variance = TRUE)$variance.estimates)
+se_direct_cf = sqrt(predict(cf_direct, estimate.variance = TRUE)$variance.estimates)
+avg_total <- mean(total_effect)
+avg_direct <- mean(direct_effect_treat)
+avg_indirect <- mean(indirect_effect_treat)
+n <- length(y)
+avg_total_se <- sqrt(mean(se_total_cf^2)) / sqrt(n)
+avg_direct_se <- sqrt(mean(se_direct_cf^2)) / sqrt(n)
+avg_indirect_se <- sqrt(mean(se_mediation_cf^2)) / sqrt(n)
+
+# 95% CIs
+avg_total_ci <- c(avg_total - 1.96 * avg_total_se, avg_total + 1.96 * avg_total_se)
+avg_direct_ci <- c(avg_direct - 1.96 * avg_direct_se, avg_direct + 1.96 * avg_direct_se)
+avg_indirect_ci <- c(avg_indirect - 1.96 * avg_indirect_se, avg_indirect + 1.96 * avg_indirect_se)
+
+cat("Avg Total Effect CI: [", avg_total_ci[1], ",", avg_total_ci[2], "]\n")
+cat("Avg Direct Effect CI: [", avg_direct_ci[1], ",", avg_direct_ci[2], "]\n")
+cat("Avg Indirect Effect CI: [", avg_indirect_ci[1], ",", avg_indirect_ci[2], "]\n")
+
+mse_total = mean((y - total_effect)^2)
+mse_direct = mean((y - direct_effect_treat)^2)
+mse_mediation = mean((y - indirect_effect_treat)^2)
+
+cat("MSE (Total Effect):", mse_total, "\n")
+cat("MSE (Direct Effect):", mse_direct, "\n")
+cat("MSE (Indirect/Mediation Effect):", mse_mediation, "\n")
 
 se_total <- average_treatment_effect(cf_total)[2]
 se_direct_treat <- average_treatment_effect(cf_direct)[2]
