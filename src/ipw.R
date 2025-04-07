@@ -162,6 +162,39 @@ est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)
 results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
 xtable(results, digits=3)
 
+
+# get MSE and CI
+boot_results <- bootstrap.mediation(y, d, m, x, w, boot = 1999, trim = 0.05)
+mc <- boot_results$mc  # This is your bootstrap matrix
+# Convert to matrix and ensure all values are numeric
+mc <- as.matrix(mc)
+mc <- matrix(as.numeric(mc), nrow = nrow(mc))  # Force coercion to numeric
+# Check for NA/NaN/Inf
+sum(is.na(mc))        # Total NA/NaN values
+sum(!is.finite(mc))   # Includes Inf/-Inf
+# Remove problematic rows (if needed)
+mc <- mc[complete.cases(mc), ]
+
+mse <- colMeans(mc^2, na.rm = TRUE)  # MSE for each effect
+# Preserve column names
+if(!is.null(colnames(mc))) {
+  names(mse) <- colnames(mc)
+}
+
+print(mse)
+
+ci_lower <- apply(mc, 2, quantile, probs = 0.025, na.rm = TRUE)
+ci_upper <- apply(mc, 2, quantile, probs = 0.975, na.rm = TRUE)
+# Preserve column names
+if(!is.null(colnames(mc))) {
+  names(ci_lower) <- colnames(mc)
+}
+print(ci_lower)
+if(!is.null(colnames(mc))) {
+  names(ci_upper) <- colnames(mc)
+}
+print(ci_upper)
+
 save.image("data/females.RData")
 
 
@@ -187,5 +220,37 @@ plot(seq(0,1,length.out = 1000),d0, type="S", ylim=c(0,8), ylab="probability den
 est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)
 results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
 xtable(results, digits=3)
+
+# get MSE and CI
+boot_results <- bootstrap.mediation(y, d, m, x, w, boot = 1999, trim = 0.05)
+mc <- boot_results$mc  # This is your bootstrap matrix
+# Convert to matrix and ensure all values are numeric
+mc <- as.matrix(mc)
+mc <- matrix(as.numeric(mc), nrow = nrow(mc))  # Force coercion to numeric
+# Check for NA/NaN/Inf
+sum(is.na(mc))        # Total NA/NaN values
+sum(!is.finite(mc))   # Includes Inf/-Inf
+# Remove problematic rows (if needed)
+mc <- mc[complete.cases(mc), ]
+
+mse <- colMeans(mc^2, na.rm = TRUE)  # MSE for each effect
+# Preserve column names
+if(!is.null(colnames(mc))) {
+  names(mse) <- colnames(mc)
+}
+
+print(mse)
+
+ci_lower <- apply(mc, 2, quantile, probs = 0.025, na.rm = TRUE)
+ci_upper <- apply(mc, 2, quantile, probs = 0.975, na.rm = TRUE)
+# Preserve column names
+if(!is.null(colnames(mc))) {
+  names(ci_lower) <- colnames(mc)
+}
+print(ci_lower)
+if(!is.null(colnames(mc))) {
+  names(ci_upper) <- colnames(mc)
+}
+print(ci_upper)
 
 save.image("data/males.RData")
