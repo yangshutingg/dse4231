@@ -303,10 +303,71 @@ indirect_pval <- 2 * pnorm(-abs(indirect_effect / indirect_se))
 cat("Doubly Robust Mediation Analysis Results:\n")
 cat("Direct Effect (Treatment on Outcome):", direct_effect, "SE:", direct_se, "P-value:", direct_pval, "\n")
 cat("Indirect Effect (Mediator on Outcome):", indirect_effect, "SE:", indirect_se, "P-value:", indirect_pval, "\n")
+cat("Total Effect:", direct_effect+indirect_effect, "SE:", sqrt(direct_se^2 + indirect_se^2), "\n")
 
-est<-mediation(y,d,m,x,w,trim=0.05, boot=1999)   
-results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
-xtable(results, digits=3)
+# Set seed for reproducibility
+set.seed(123)
+
+# Number of bootstrap samples
+n_boot <- 1000  
+
+# Initialize storage
+boot_direct <- numeric(n_boot)
+boot_indirect <- numeric(n_boot)
+boot_total <- numeric(n_boot)
+
+# Bootstrap loop
+for (i in 1:n_boot) {
+  # Resample data with replacement
+  idx <- sample(1:length(y), replace = TRUE)
+  y_boot <- y[idx]
+  d_boot <- d[idx]
+  m_boot <- m[idx]
+  confounders_boot <- confounders[idx, ]
+  
+  # Re-estimate models
+  tryCatch({
+    # Direct effect model
+    direct_model_boot <- lm(y_boot ~ d_boot + m_boot + confounders_boot, weights = weights_treat[idx])
+    direct_effect_boot <- coef(direct_model_boot)["d_boot"]
+    
+    # Mediator model (d -> m)
+    mediator_model_boot <- lm(m_boot ~ d_boot + confounders_boot, weights = weights_treat[idx])
+    effect_d_on_m_boot <- coef(mediator_model_boot)["d_boot"]
+    
+    # Indirect effect model (m -> y)
+    indirect_model_boot <- lm(y_boot ~ m_boot + d_boot + confounders_boot, weights = weights_mediator[idx])
+    effect_m_on_y_boot <- coef(indirect_model_boot)["m_boot"]
+    
+    # Store results
+    boot_direct[i] <- direct_effect_boot
+    boot_indirect[i] <- effect_d_on_m_boot * effect_m_on_y_boot
+    boot_total[i] <- direct_effect_boot + (effect_d_on_m_boot * effect_m_on_y_boot)
+  }, error = function(e) {
+    # Skip iterations with errors
+    boot_direct[i] <- boot_indirect[i] <- boot_total[i] <- NA
+  })
+}
+
+# Remove NA values (failed iterations)
+boot_direct <- na.omit(boot_direct)
+boot_indirect <- na.omit(boot_indirect)
+boot_total <- na.omit(boot_total)
+
+# Original estimates (from your code)
+original_direct <- direct_effect
+original_indirect <- indirect_effect
+original_total <- direct_effect + indirect_effect
+
+# MSE calculation
+mse_direct <- mean((boot_direct - original_direct)^2)
+mse_indirect <- mean((boot_indirect - original_indirect)^2)
+mse_total <- mean((boot_total - original_total)^2)
+
+# 95% Confidence Intervals (percentile method)
+ci_direct <- quantile(boot_direct, probs = c(0.025, 0.975))
+ci_indirect <- quantile(boot_indirect, probs = c(0.025, 0.975))
+ci_total <- quantile(boot_total, probs = c(0.025, 0.975))
 
 # Save results
 save.image("data/dr_males.RData")
