@@ -6,6 +6,7 @@ library(WeightIt)  # For propensity score weighting
 library(sandwich)  # For robust standard errors
 library(lmtest)  # For hypothesis testing
 library(mediation)  # Traditional mediation methods
+library(haven)
 
 
 #########################
@@ -148,7 +149,7 @@ bootstrap.mediation<-function(y,d,m,x,w,boot=1999,trim=0.05){
 ###############
 
 # Load the dataset
-data=read.dta("data/causalmech.dta")
+data=read_dta("data/causalmech.dta")
 attach(data)
 
 # 1) ESTIMATION FOR FEMALES:
@@ -191,10 +192,7 @@ indirect_pval <- 2 * pnorm(-abs(indirect_effect / indirect_se))
 cat("Doubly Robust Mediation Analysis Results:\n")
 cat("Direct Effect (Treatment on Outcome):", direct_effect, "SE:", direct_se, "P-value:", direct_pval, "\n")
 cat("Indirect Effect (Mediator on Outcome):", indirect_effect, "SE:", indirect_se, "P-value:", indirect_pval, "\n")
-
-est<-mediation(y,d,m,x,w,trim=0.05, boot=19)   
-results<-rbind(cbind(est$te, est$de.treat, est$de.control, est$ie.total.treat,  est$ie.total.control, est$ie.partial.treat,  est$ie.partial.control,  est$ie.treat.pretreat,  est$ie.control.pretreat), cbind(est$sd.te, est$sd.de.treat, est$sd.de.control, est$sd.ie.total.treat, est$sd.ie.total.control, est$sd.ie.partial.treat, est$sd.ie.partial.control, est$sd.ie.treat.pretreat,  est$sd.ie.control.pretreat), cbind(2*pnorm(-abs(est$te/est$sd.te)), 2*pnorm(-abs(est$de.treat/est$sd.de.treat)), 2*pnorm(-abs(est$de.control/est$sd.de.control)), 2*pnorm(-abs(est$ie.total.treat/est$sd.ie.total.treat)),  2*pnorm(-abs(est$ie.total.control/est$sd.ie.total.control)),  2*pnorm(-abs(est$ie.partial.treat/est$sd.ie.partial.treat)), 2*pnorm(-abs(est$ie.partial.control/est$sd.ie.partial.control)), 2*pnorm(-abs(est$ie.treat.pretreat/est$sd.ie.treat.pretreat)), 2*pnorm(-abs(est$ie.control.pretreat/est$sd.ie.control.pretreat))    )  )
-xtable(results, digits=3)
+cat("Total Effect:", direct_effect+indirect_effect, "SE:", sqrt(direct_se^2 + indirect_se^2), "\n")
 
 # Save results
 save.image("data/dr_females.RData")
