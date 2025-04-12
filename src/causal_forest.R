@@ -115,7 +115,8 @@ rownames(results) <- c("total", "dir.treat", "dir.control", "indir.treat", "indi
 
 print(results)
 
-plot(tree <- get_tree(cf_total, 1))
+tree <- get_tree(cf_total, 1)
+plot(tree)
 
 
 # 2) ESTIMATION FOR MALES:
@@ -227,4 +228,5 @@ rownames(results) <- c("total", "dir.treat", "dir.control", "indir.treat", "indi
 
 print(results)
 
-plot(tree <- get_tree(cf_total, 1))
+tree <- get_tree(cf_total, 1)
+plot(tree)
