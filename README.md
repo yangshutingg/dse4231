@@ -110,7 +110,12 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 ## Files  
 
 - `data/`: Dataset used for analysis. 
-- `src/`: Scripts for OLS causal mediation, IPW, DML, DR, CF models, as well as treatment effects estimations.  
+- `src/`: Source code for each model and treatment effects estimation.
+  - OLS causal mediation: [`mediation.R`](https://github.com/yangshutingg/dse4231/blob/main/src/mediation.R)
+  - IPW: `src/`
+  - DML: `src/`
+  - DR: `src/`
+  - CF: `src/`
 - `README.md`: This file.  
 
 ---
