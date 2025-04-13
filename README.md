@@ -35,12 +35,12 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 - **Source**:  
   - **Martin Huber's Dataset**: Job Corps program [Download dataset](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
 
-- **Treatment (D)**:  
-  - Stationarity ensured via differencing and log transformations.  
-  - Lags constructed to capture time dependencies for predictors and the dependent variable.  
-
-- **Market State Classification**:  
-  - Applied the Bry and Boschan algorithm with a two-sided moving average to identify bull and bear market cycles.  
+- **Variables of interest**:  
+  - **Treatment (D)**:
+  - **Mediator (M)**:
+  - **Outcome (Y)**:
+  - **Pre-treatment covariates (X)**:
+  - **Post-treatment covariates (W)**:
 
 ### Models  
 
@@ -58,10 +58,10 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 - **F1 Score**: Evaluates model classification performance for imbalanced market state data.  
 - **Profit-Based Portfolio Strategy**: Assesses cumulative returns by applying market predictions to an investment strategy.  
 
-### Profit-Based Portfolio Strategy  
-1. **Bear Market Prediction**: Allocate investments to risk-free assets (e.g., Treasury bills).  
-2. **Bull Market Prediction**: Allocate investments to stocks.  
-3. Compare cumulative returns using thresholds (e.g., 0.5 and sample averages) across all models and horizons.  
+### Treatment effects  
+1. **Total effect**:
+2. **Direct effect**: 
+3. **Indirect effect**:
 
 ---
 
