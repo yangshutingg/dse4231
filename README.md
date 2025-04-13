@@ -33,7 +33,7 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 ### Data  
 
 - **Source**:  
-  - **Martin Huber's Dataset**: Job Corps program [Download dataset](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
+  - **Martin Huber's Dataset**: A dataset of the U.S. Job Corps experimental study with information on the health and employment outcomes of disadvantaged youths. The dataset can be downloaded [here](http://qed.econ.queensu.ca/jae/datasets/huber001/).
 
 - **Variables of interest**:  
   - **Treatment (D)**: Assignment to the Job Corps program
