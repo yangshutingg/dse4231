@@ -1,4 +1,4 @@
-# DSE4231: Mediation in Machine Learning - An Extension of Inverse Probability Weighting
+# DSE4231: Mediation in machine learning - An extension of inverse probability weighting
 
 ## Project Overview  
 
