@@ -98,9 +98,9 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 ## Contributors  
 
 1. [Eliza Ong](https://github.com/Elizaongwz)  
-2. Krystal Low Li Tong
-3. Lily Rozana Joehann Aung
-4. Yang Shu Ting  
+2. [Krystal Low Li Tong](https://github.com/krystallow)
+3. [Lily Rozana Joehann Aung](https://github.com/lilyrja)
+4. [Yang Shu Ting](https://github.com/yangshutingg)  
 
 ---
 
