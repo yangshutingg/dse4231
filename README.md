@@ -44,15 +44,20 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 
 ### Models  
 
+#### Causal Mediation
+- **Logit Regression**: A replication of Huber's application.
+
 #### Inverse Probability Weighting (IPW)  
 - **Logit Regression**: A replication of Huber's application.  
 
-#### Machine Learning Models  
-- **LASSO Logit**: Regression with L1 regularization for feature selection.  
-- **Tree-Based Models**:  
-  - Random Forest  
-  - Gradient Boosting Machines (GBM)  
-  - Extreme Gradient Boosting (XGBoost)  
+#### Double Machine Learning (DML)  
+- **Logit Regression**: A replication of Huber's application.
+
+#### Doubly Robust (DR)  
+- **Logit Regression**: A replication of Huber's application.
+
+#### Causal Forest (CF)  
+- **Logit Regression**: A replication of Huber's application.
 
 ### Evaluation Metrics  
 - **F1 Score**: Evaluates model classification performance for imbalanced market state data.  
