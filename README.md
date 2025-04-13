@@ -109,13 +109,15 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ## Files  
 
-- `data/`: Dataset used for analysis. 
+- `data/`: Dataset used for analysis.
+  - STATA data file format: [`causalmech.dta`](https://github.com/yangshutingg/dse4231/blob/main/data/causalmech.dta)
+  - CSV format: [`causalmech.csv`](https://github.com/yangshutingg/dse4231/blob/main/data/causalmech.csv)
 - `src/`: Source code for each model and treatment effects estimation.
   - OLS causal mediation: [`mediation.R`](https://github.com/yangshutingg/dse4231/blob/main/src/mediation.R)
-  - IPW: `src/`
-  - DML: `src/`
-  - DR: `src/`
-  - CF: `src/`
+  - IPW: [`ipw.R`](https://github.com/yangshutingg/dse4231/blob/main/src/ipw.R)
+  - DML: [`dml.R`](https://github.com/yangshutingg/dse4231/blob/main/src/dml.R)
+  - DR: [`dr.R`](https://github.com/yangshutingg/dse4231/blob/main/src/dr.R)
+  - CF: [`causal_forest.R`](https://github.com/yangshutingg/dse4231/blob/main/src/causal_forest.R)
 - `README.md`: This file.  
 
 ---
