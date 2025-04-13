@@ -51,7 +51,6 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
     - `pe_prb0`: Whether participant had physical/emotional problems at assignment.
     - `pe_prb0mis`: Whether physical/emotional problems at assignment was missing. = 1 if `pe_prb0` is missing, = 0 otherwise.
     - `everalc`: Whether participant have ever had alcohol abuse before assignment.
-    - `alc12`: 
     - `everilldrugs`: Whether participant have ever took illegal drugs before assignment.
     - `age_cat`: Age at assignment.
     - `edumis`: education missing
@@ -67,22 +66,22 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
     - `welf2`: Whether participant was twice on welfare before assignment.
     - `publicass`: Whether participant was on public assistance 1 year before assignment.
   - **Post-treatment covariates (W)**:
-    - emplq4
-    - emplq4full
-    - pemplq4,
-    - pemplq4mis,
-    - vocq4,
-    - vocq4mis,
-    - health1212,
-    - health123,
-    - pe_prb12,
-    - pe_prb12mis,
-    - narry1,
-    - numkidhhf1zero,
-    - numkidhhf1onetwo,
-    - pubhse12,
-    - h_ins12a,
-    - h_ins12amis
+    - `emplq4`: Whether participant worked some time in 9-12 months after assignment.
+    - `emplq4full`: Whether participant worked all the time in 9-12 months after assignment
+    - `pemplq4`: Proportion of weeks worked 9-12 months after assignment.
+    - `pemplq4mis`: Whether proportion of weeks worked 9-12 months after assignment was missing. = 1 if `pemplq4` is missing, = 0 otherwise.
+    - `vocq4`: Whether participant was in vocational training 9-12 months after assignment.
+    - `vocq4mis`: Whether participation in vocational training 9-12 months after assignment was missing. = 1 if `vocq4` is missing, = 0 otherwise.
+    - `health1212`: Health 1 year after assignment. = 1 if very good or good health, = 0 otherwise. (baseline category = 4 = bad health)
+    - `health123`: Health 1 year after assignment. = 1 if fair health, = 0 otherwise. (baseline category = 4 = bad health)
+    - `pe_prb12`: Whether participant had physical/emotional problems 1 year after assignment.
+    - `pe_prb12mis`: missing - Whether physical/emotional problems 1 year after assignment was missing. = 1 if `pe_prb12` is missing, = 0 otherwise.
+    - `narry1`: Number of arrests in first year after assignment.
+    - `numkidhhf1zero`: Whether participant has his/her own children in the household 1 year after assignment. = 1 if no own children in the household, = 0 otherwise.
+    - `numkidhhf1onetwo`: Whether participant has one or two own children in the household 1 year after assignment. = 1 if 1 or 2 children in the household, = 0 otherwise.
+    - `pubhse12`: Whether participant stayed in public housing 1 year after assignment.
+    - `h_ins12a`: Whether participant received Aid to Families with Dependent Children (AFDC) or other transfer payments 1 year after assignment.
+    - `h_ins12amis`: Whether transfer payments 1 year after assignment was missing. = 1 if `h_ins12a` is missing, = 0 otherwise.
 
 ### Models  
 
@@ -100,10 +99,6 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 #### Causal Forest (CF)  
 - **Logit Regression**: A replication of Huber's application.
-
-### Evaluation Metrics  
-- **F1 Score**: Evaluates model classification performance for imbalanced market state data.  
-- **Profit-Based Portfolio Strategy**: Assesses cumulative returns by applying market predictions to an investment strategy.  
 
 ### Treatment effects  
 1. **Total effect**:
