@@ -53,8 +53,8 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
     - `everalc`: Whether participant have ever had alcohol abuse before assignment.
     - `everilldrugs`: Whether participant have ever took illegal drugs before assignment.
     - `age_cat`: Age at assignment.
-    - `edumis`: education missing
-    - `eduhigh`: higher education
+    - `edumis`: Whether participant education is missing.
+    - `eduhigh`: Whether participant has had higher education.
     - `rwhite`: Whether participant was white.
     - `everarr`: Whether participant was ever arrested before assignment.
     - `hhsize`: Household size at assignment.
