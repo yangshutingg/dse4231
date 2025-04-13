@@ -153,4 +153,10 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ---
 
+## References
+
+* Huber, M. (2014). Identifying causal mechanisms (primarily) based on inverse probability weighting. Journal of Applied Econometrics,29(6), 920-943. (https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.2341https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.2341)
+
+---
+
 This project showcases how machine learning models can enhance mediation analysis by enhancing precision in treatment effect estimation. Visit the [GitHub repository](https://github.com/yangshutingg/dse4231) for more details!
