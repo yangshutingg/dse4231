@@ -22,9 +22,8 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ### Objectives:  
 
-1. Compare the performance of ML models (e.g., LASSO, Random Forest, Gradient Boosting Machines) with traditional logit regression models.  
-2. Use **profit-based portfolio strategies** to evaluate the practical utility of market state predictions.  
-3. Identify key economic and financial predictors across different forecast horizons (short, medium, and long-term).  
+1. Compare the performance of models (IPW, DML, DR, CF) with OLS causal mediation model.  
+2. Identify total, direct and indirect treatment effects of the Job Corps program for males and females.  
 
 ---
 
@@ -36,10 +35,37 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
   - **Martin Huber's Dataset**: A dataset of the U.S. Job Corps experimental study with information on the health and employment outcomes of disadvantaged youths. The dataset can be downloaded [here](http://qed.econ.queensu.ca/jae/datasets/huber001/).
 
 - **Variables of interest**:  
-  - **Treatment (D)**: Assignment to the Job Corps program
-  - **Mediator (M)**: Employment 1 to 1.5 years after assignment
-  - **Outcome (Y)**: Whether participants reported “very good” health 30 months after assignment
-  - **Pre-treatment covariates (X)**: schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis,pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, hhinc8, fdstamp, welf1, welf2, publicass
+  - **Treatment (D)**:
+    - `treat`: Assignment to the Job Corps program. = 1 if in program group, = 0 if in control group.
+  - **Mediator (M)**:
+    - `work2year2q`: Employment 1 to 1.5 years after assignment.
+  - **Outcome (Y)**:
+    - `exhealth30`: Whether participants reported “very good” health 30 months after assignment.
+  - **Pre-treatment covariates (X)**:
+    - `schobef`:
+    - trainyrbef
+    - jobeverbef
+    - jobyrbef
+    - health012
+    - health0mis
+    - pe_prb0
+    - pe_prb0mis
+    - everalc
+    - alc12
+    - everilldrugs
+    - age_cat
+    - edumis
+    - eduhigh
+    - rwhite
+    - everarr
+    - hhsize
+    - hhsizemis
+    - hhinc12
+    - hhinc8
+    - fdstamp
+    - welf1
+    - welf2
+    - publicass
   - **Post-treatment covariates (W)**: emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis
 
 ### Models  
