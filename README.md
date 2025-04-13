@@ -98,8 +98,8 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ## Files  
 
-- `data/`: Preprocessed datasets, including predictors and market state classifications.  
-- `src/`: Scripts for traditional and machine learning models, as well as performance metrics calculations and portfolio strategy implementation.  
+- `data/`(https://github.com/yangshutingg/dse4231/tree/main/data): Preprocessed datasets, including predictors and market state classifications.  
+- `src/`(https://github.com/yangshutingg/dse4231/tree/main/src): Scripts for traditional and machine learning models, as well as performance metrics calculations and portfolio strategy implementation.  
 - `README.md`: This file.  
 
 ---
