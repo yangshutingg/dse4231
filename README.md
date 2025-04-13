@@ -40,33 +40,49 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
   - **Mediator (M)**:
     - `work2year2q`: Employment 1 to 1.5 years after assignment.
   - **Outcome (Y)**:
-    - `exhealth30`: Whether participants reported “very good” health 30 months after assignment.
+    - `exhealth30`: Whether participant reported “very good” health 30 months after assignment.
   - **Pre-treatment covariates (X)**:
-    - `schobef`:
-    - trainyrbef
-    - jobeverbef
-    - jobyrbef
-    - health012
-    - health0mis
-    - pe_prb0
-    - pe_prb0mis
-    - everalc
-    - alc12
-    - everilldrugs
-    - age_cat
-    - edumis
-    - eduhigh
-    - rwhite
-    - everarr
-    - hhsize
-    - hhsizemis
-    - hhinc12
-    - hhinc8
-    - fdstamp
-    - welf1
-    - welf2
-    - publicass
-  - **Post-treatment covariates (W)**: emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis
+    - `schobef`: Whether participant was in school 1 year before assignment.
+    - `trainyrbef`: Whether participant was in training 1 year before assignment.
+    - `jobeverbef`: Whether participant ever had a job before assignment.
+    - `jobyrbef`: Whether participant had a job 1 year before assignment.
+    - `health012`: Health at assignment. = 1 if very good health, = 4 if bad health.
+    - `health0mis`: Whether health at assignment was missing. = 1 if `health012` is missing, = 0 otherwise.
+    - `pe_prb0`: Whether participant had physical/emotional problems at assignment.
+    - `pe_prb0mis`: Whether physical/emotional problems at assignment was missing. = 1 if `pe_prb0` is missing, = 0 otherwise.
+    - `everalc`: Whether participant have ever had alcohol abuse before assignment.
+    - `alc12`: 
+    - `everilldrugs`: Whether participant have ever took illegal drugs before assignment.
+    - `age_cat`: Age at assignment.
+    - `edumis`: education missing
+    - `eduhigh`: higher education
+    - `rwhite`: Whether participant was white.
+    - `everarr`: Whether participant was ever arrested before assignment.
+    - `hhsize`: Household size at assignment.
+    - `hhsizemis`: Whether household size at assignment was missing. = 1 if `hhsize` is missing, = 0 otherwise.
+    - `hhinc12`: Whether household income was low 1 year before assignment. (baseline category = intermediate household income)
+    - `hhinc8`: Whether household income was high 1 year before assignment. (baseline category = intermediate household income)
+    - `fdstamp`: Whether participant received foodstamps 1 year before assignment.
+    - `welf1`: Whether participant was once on welfare before assignment.
+    - `welf2`: Whether participant was twice on welfare before assignment.
+    - `publicass`: Whether participant was on public assistance 1 year before assignment.
+  - **Post-treatment covariates (W)**:
+    - emplq4
+    - emplq4full
+    - pemplq4,
+    - pemplq4mis,
+    - vocq4,
+    - vocq4mis,
+    - health1212,
+    - health123,
+    - pe_prb12,
+    - pe_prb12mis,
+    - narry1,
+    - numkidhhf1zero,
+    - numkidhhf1onetwo,
+    - pubhse12,
+    - h_ins12a,
+    - h_ins12amis
 
 ### Models  
 
@@ -98,8 +114,8 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ## Files  
 
-- `data/`(https://github.com/yangshutingg/dse4231/tree/main/data): Preprocessed datasets, including predictors and market state classifications.  
-- `src/`(https://github.com/yangshutingg/dse4231/tree/main/src): Scripts for traditional and machine learning models, as well as performance metrics calculations and portfolio strategy implementation.  
+- `data/`: Dataset used for analysis. 
+- `src/`: Scripts for OLS causal mediation, IPW, DML, DR, CF models, as well as treatment effects estimations.  
 - `README.md`: This file.  
 
 ---
