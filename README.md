@@ -2,7 +2,7 @@
 
 ## Project Overview  
 
-This repository contains the codes and methodologies for predicting stock market states (bull or bear markets) using **machine learning (ML) models**. The study compares ML methods with traditional econometric models to evaluate their predictive accuracy and explore their potential to detect nonlinear interactions in financial data.  
+This repository contains the codes and methodologies for estimating treatment effects using **machine learning (ML) models**. The study compares ML methods with inverse probability weighting to evaluate their predictive precision and explore their potential to detect heterogenous effect in Job Corps data.  
 
 ---
 
@@ -36,11 +36,11 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
   - **Martin Huber's Dataset**: Job Corps program [Download dataset](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
 
 - **Variables of interest**:  
-  - **Treatment (D)**:
-  - **Mediator (M)**:
-  - **Outcome (Y)**:
-  - **Pre-treatment covariates (X)**:
-  - **Post-treatment covariates (W)**:
+  - **Treatment (D)**: Assignment to the Job Corps program
+  - **Mediator (M)**: Employment 1 to 1.5 years after assignment
+  - **Outcome (Y)**: Whether participants reported “very good” health 30 months after assignment
+  - **Pre-treatment covariates (X)**: schobef, trainyrbef, jobeverbef, jobyrbef, health012, health0mis,pe_prb0, pe_prb0mis, everalc, alc12, everilldrugs, age_cat, edumis, eduhigh, rwhite, everarr, hhsize, hhsizemis, hhinc12, hhinc8, fdstamp, welf1, welf2, publicass
+  - **Post-treatment covariates (W)**: emplq4, emplq4full, pemplq4, pemplq4mis, vocq4, vocq4mis,  health1212, health123,  pe_prb12, pe_prb12mis,  narry1, numkidhhf1zero, numkidhhf1onetwo, pubhse12, h_ins12a, h_ins12amis
 
 ### Models  
 
