@@ -104,4 +104,4 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 
 ---
 
-This project showcases how machine learning models can enhance causal mediation analysis by enhancing precision in treatment effect estimation. Visit the [GitHub repository](https://github.com/yangshutingg/dse4231) for more details!  
+This project showcases how machine learning models can enhance mediation analysis by enhancing precision in treatment effect estimation. Visit the [GitHub repository](https://github.com/yangshutingg/dse4231) for more details!
