@@ -33,9 +33,9 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 ### Data  
 
 - **Source**:  
-  - **Martin Huber's Dataset**: [Link](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
+  - **Martin Huber's Dataset**: Job Corps program [Download dataset](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
 
-- **Transformations**:  
+- **Treatment (D)**:  
   - Stationarity ensured via differencing and log transformations.  
   - Lags constructed to capture time dependencies for predictors and the dependent variable.  
 
@@ -44,8 +44,8 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 
 ### Models  
 
-#### Traditional Model  
-- **Logit Regression**: Baseline benchmark for predicting market states.  
+#### Inverse Probability Weighting (IPW)  
+- **Logit Regression**: A replication of Huber's application.  
 
 #### Machine Learning Models  
 - **LASSO Logit**: Regression with L1 regularization for feature selection.  
@@ -69,7 +69,6 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 
 - `data/`: Preprocessed datasets, including predictors and market state classifications.  
 - `src/`: Scripts for traditional and machine learning models, as well as performance metrics calculations and portfolio strategy implementation.  
-- `visualisations/`: Graphs detailing the cumulative returns from portfolio strategy implementation using each ML model.    
 - `README.md`: This file.  
 
 ---
