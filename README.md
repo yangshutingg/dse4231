@@ -23,7 +23,7 @@ In causal inference, mediators transmit part of a treatment’s effect to the ou
 ### Objectives:  
 
 1. Compare the performance of models (IPW, DML, DR, CF) with OLS causal mediation model.  
-2. Identify total, direct and indirect treatment effects of the Job Corps program for males and females.  
+2. Identify total, direct and indirect treatment effects of the Job Corps program for males and females respectively.  
 
 ---
 
