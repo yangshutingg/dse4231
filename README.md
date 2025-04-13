@@ -30,11 +30,10 @@ Forecasting bull and bear markets is crucial for investment strategies and risk 
 
 ## Methodology  
 
-### Data Preprocessing  
+### Data  
 
 - **Source**:  
-  - **Robert Shiller's Dataset**: Includes US stock prices, earnings, dividends, and interest rates.  
-  - **Amit Goyal's Dataset**: Provides macroeconomic indicators such as unemployment rates and industrial production growth.  
+  - **Martin Huber's Dataset**: [Link](http://qed.econ.queensu.ca/jae/datasets/huber001/)  
 
 - **Transformations**:  
   - Stationarity ensured via differencing and log transformations.  
