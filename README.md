@@ -1,8 +1,8 @@
-# DSE4231: Mediation in machine learning - An extension of inverse probability weighting
+# DSE4231: Machine learning in mediation analysis - an extension of inverse probability weighting
 
 ## Project Overview  
 
-This repository contains the codes and methodologies for estimating treatment effects using **machine learning (ML) models**. The study compares ML methods with inverse probability weighting to evaluate their predictive precision and explore their potential to detect heterogenous effect in Job Corps data.  
+This repository contains the codes and methodologies for estimating treatment effects using **machine learning (ML) models**. The study compares ML methods with inverse probability weighting to explore their potential to identify treatment effects of the Job Corps program.  
 
 ---
 
@@ -18,7 +18,7 @@ This repository contains the codes and methodologies for estimating treatment ef
 
 ## Background  
 
-Forecasting bull and bear markets is crucial for investment strategies and risk management. Traditional econometric models, such as logit regressions, assume linear relationships and often struggle to capture the complex dynamics of financial markets. Machine learning models provide an opportunity to enhance prediction accuracy by identifying nonlinear patterns and interactions.  
+In causal inference, mediators transmit part of a treatment’s effect to the outcome but are typically not randomly assigned, leading to potential confounding bias. Huber (2014) tackles this challenge using inverse probability weighting (IPW) to estimate direct and indirect effects. Machine learning methods further enhance mediation analysis by flexibly adjusting for high-dimensional confounders and capturing treatment effect heterogeneity.
 
 ### Objectives:  
 
