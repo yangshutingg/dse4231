@@ -1,4 +1,4 @@
-# DSE4231 Topics in Data Science and the Digital Economy: Mediation in Machine Learning - An Extension of Inverse Probability Weighting
+# DSE4231: Mediation in Machine Learning - An Extension of Inverse Probability Weighting
 
 ## Project Overview  
 
